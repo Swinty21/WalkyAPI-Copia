@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WalkyAPI - Documentación</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .version {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .search-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar a {
+            color: #555;
+            text-decoration: none;
+            padding: 8px 12px;
+            display: block;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: #f0f0f0;
+            color: #667eea;
+            padding-left: 20px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+
+        .main-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .endpoint-section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .endpoint-section:last-child {
+            border-bottom: none;
+        }
+
+        .endpoint-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .endpoint-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .endpoint-card:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            transform: translateX(5px);
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .method {
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.85em;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .method.get { background: #61affe; color: white; }
+        .method.post { background: #49cc90; color: white; }
+        .method.put { background: #fca130; color: white; }
+        .method.patch { background: #50e3c2; color: white; }
+        .method.delete { background: #f93e3e; color: white; }
+
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            color: #555;
+            font-weight: bold;
+            flex: 1;
+        }
+
+        .endpoint-details {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .endpoint-details.active {
+            display: block;
+        }
+
+        .detail-section {
+            margin-bottom: 15px;
+        }
+
+        .detail-section h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .description {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                top: 0;
+                max-height: none;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .stats-info {
+            background: #e8f4ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐕 WalkyAPI</h1>
+            <p>Documentación completa de la API</p>
+            <span class="version">v1.0.0</span>
+        </header>
+
+        <div class="search-bar">
+            <input type="text" class="search-input" id="searchInput" placeholder="Buscar endpoints... (ej: auth, users, walkers, settings)">
+        </div>
+
+        <div class="content">
+            <aside class="sidebar">
+                <h3>📋 Categorías</h3>
+                <ul id="categoryList">
+                    <li><a href="#auth">🔐 Autenticación</a></li>
+                    <li><a href="#users">👥 Usuarios</a></li>
+                    <li><a href="#notifications">🔔 Notificaciones</a></li>
+                    <li><a href="#walkers">🚶 Paseadores</a></li>
+                    <li><a href="#tickets">🎫 Tickets</a></li>
+                    <li><a href="#banners">🎨 Banners</a></li>
+                    <li><a href="#reviews">⭐ Reseñas</a></li>
+                    <li><a href="#settings">⚙️ Configuración</a></li>
+                    <li><a href="#walkerRegistrations">📝 Registro Paseadores</a></li>
+                    <li><a href="#pets">🐾 Mascotas</a></li>
+                    <li><a href="#walks">🦮 Paseos</a></li>
+                    <li><a href="#chat">💬 Chat</a></li>
+                    <li><a href="#walkMaps">🗺️ Mapas GPS</a></li>
+                </ul>
+            </aside>
+
+            <main class="main-content" id="mainContent">
+                
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const apiData = {
+            auth: {
+                title: "🔐 Autenticación",
+                endpoints: {
+                    register: {
+                        method: 'POST',
+                        endpoint: '/api/auth/register',
+                        description: 'Registrar nuevo usuario',
+                        body: {
+                            name: 'string (requerido)',
+                            email: 'string (requerido)',
+                            password: 'string (min 6 caracteres, requerido)',
+                            phone: 'string (opcional)',
+                            location: 'string (opcional)',
+                            role: 'string (opcional, default: client)'
+                        }
+                    },
+                    login: {
+                        method: 'POST',
+                        endpoint: '/api/auth/login',
+                        description: 'Iniciar sesión',
+                        body: {
+                            email: 'string (requerido)',
+                            password: 'string (requerido)'
+                        }
+                    },
+                    checkSession: {
+                        method: 'POST',
+                        endpoint: '/api/auth/check-session',
+                        description: 'Verificar sesión activa',
+                        headers: {
+                            Authorization: 'Bearer {token}'
+                        }
+                    },
+                    verify: {
+                        method: 'GET',
+                        endpoint: '/api/auth/verify',
+                        description: 'Verificar token válido',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    logout: {
+                        method: 'POST',
+                        endpoint: '/api/auth/logout',
+                        description: 'Cerrar sesión',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    refreshToken: {
+                        method: 'POST',
+                        endpoint: '/api/auth/refresh-token',
+                        description: 'Renovar token JWT',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    }
+                }
+            },
+            users: {
+                title: "👥 Usuarios",
+                endpoints: {
+                    getAll: {
+                        method: 'GET',
+                        endpoint: '/api/users',
+                        description: 'Obtener todos los usuarios',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getById: {
+                        method: 'GET',
+                        endpoint: '/api/users/:id',
+                        description: 'Obtener usuario por ID',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    update: {
+                        method: 'PUT',
+                        endpoint: '/api/users/:id',
+                        description: 'Actualizar usuario',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            name: 'string (opcional)',
+                            email: 'string (opcional)',
+                            password: 'string (opcional, min 6 caracteres)',
+                            phone: 'string (opcional)',
+                            location: 'string (opcional)',
+                            profileImage: 'string (opcional)'
+                        }
+                    },
+                    delete: {
+                        method: 'DELETE',
+                        endpoint: '/api/users/:id',
+                        description: 'Eliminar usuario (soft delete)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getStats: {
+                        method: 'GET',
+                        endpoint: '/api/users/stats',
+                        description: 'Obtener estadísticas de usuarios',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    search: {
+                        method: 'GET',
+                        endpoint: '/api/users/search',
+                        description: 'Buscar usuarios con filtros',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        queryParams: {
+                            query: 'string (opcional) - Buscar por nombre o email',
+                            role: 'string (opcional) - Filtrar por rol',
+                            status: 'string (opcional) - Filtrar por estado',
+                            limit: 'number (opcional, default: 50) - Limitar resultados'
+                        }
+                    },
+                    changeStatus: {
+                        method: 'PATCH',
+                        endpoint: '/api/users/:id/status',
+                        description: 'Cambiar estado de usuario',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            status: 'string (requerido) - active, inactive, suspended'
+                        }
+                    },
+                    updateByAdmin: {
+                        method: 'PUT',
+                        endpoint: '/api/admin/users/:id',
+                        description: 'Actualizar usuario (solo campos permitidos para admin)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            name: 'string (opcional)',
+                            role: 'string (opcional) - admin, client, walker, support',
+                            status: 'string (opcional) - active, inactive',
+                            profileImage: 'string (opcional)',
+                            phone: 'string (opcional)',
+                            location: 'string (opcional)'
+                        }
+                    }
+                }
+            },
+            notifications: {
+                title: "🔔 Notificaciones",
+                endpoints: {
+                    getAll: {
+                        method: 'GET',
+                        endpoint: '/api/notifications',
+                        description: 'Obtener notificaciones del usuario autenticado',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getById: {
+                        method: 'GET',
+                        endpoint: '/api/notifications/:id',
+                        description: 'Obtener notificación específica por ID',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    create: {
+                        method: 'POST',
+                        endpoint: '/api/notifications',
+                        description: 'Crear nueva notificación',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            userId: 'number (requerido)',
+                            title: 'string (requerido)',
+                            content: 'string (requerido)',
+                            type: 'string (requerido) - success, warning, info, error',
+                            walkerName: 'string (opcional)'
+                        }
+                    },
+                    markAsRead: {
+                        method: 'PATCH',
+                        endpoint: '/api/notifications/:id/read',
+                        description: 'Marcar notificación como leída',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    markAllRead: {
+                        method: 'PATCH',
+                        endpoint: '/api/notifications/mark-all-read',
+                        description: 'Marcar todas las notificaciones como leídas',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getStats: {
+                        method: 'GET',
+                        endpoint: '/api/notifications/stats',
+                        description: 'Obtener estadísticas de notificaciones del usuario',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    }
+                }
+            },
+            walkers: {
+                title: "🚶 Paseadores",
+                endpoints: {
+                    getAll: {
+                        method: 'GET',
+                        endpoint: '/api/walkers',
+                        description: 'Obtener todos los paseadores disponibles',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        response: {
+                            data: {
+                                walkers: 'Array de paseadores + placeholder',
+                                total: 'number - Total de paseadores reales'
+                            }
+                        }
+                    },
+                    getById: {
+                        method: 'GET',
+                        endpoint: '/api/walkers/:id',
+                        description: 'Obtener paseador específico por ID',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getSettings: {
+                        method: 'GET',
+                        endpoint: '/api/walkers/:id/settings',
+                        description: 'Obtener configuraciones del paseador',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        response: {
+                            settings: {
+                                walkerId: 'number',
+                                location: 'string',
+                                pricePerPet: 'number',
+                                hasGPSTracker: 'boolean',
+                                hasDiscount: 'boolean',
+                                discountPercentage: 'number',
+                                updatedAt: 'string (ISO date)'
+                            }
+                        }
+                    },
+                    updateSettings: {
+                        method: 'PUT',
+                        endpoint: '/api/walkers/:id/settings',
+                        description: 'Actualizar configuraciones del paseador',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            location: 'string (opcional)',
+                            pricePerPet: 'number (opcional)',
+                            hasGPSTracker: 'boolean (opcional)',
+                            hasDiscount: 'boolean (opcional)',
+                            discountPercentage: 'number (opcional, 0-100)'
+                        }
+                    },
+                    getEarnings: {
+                        method: 'GET',
+                        endpoint: '/api/walkers/:id/earnings',
+                        description: 'Obtener estadísticas de ganancias del paseador',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        response: {
+                            earnings: {
+                                monthly: 'number - Ganancias del mes actual',
+                                total: 'number - Ganancias totales',
+                                completedWalks: 'number - Paseos completados',
+                                currentPricePerPet: 'number - Precio actual por mascota',
+                                hasDiscount: 'boolean',
+                                discountPercentage: 'number'
+                            }
+                        }
+                    },
+                    updateLocation: {
+                        method: 'PATCH',
+                        endpoint: '/api/walkers/:id/location',
+                        description: 'Actualizar solo la ubicación del paseador',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            location: 'string (requerido)'
+                        }
+                    },
+                    updatePricing: {
+                        method: 'PATCH',
+                        endpoint: '/api/walkers/:id/pricing',
+                        description: 'Actualizar configuración de precios del paseador',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            pricePerPet: 'number (opcional)',
+                            hasDiscount: 'boolean (opcional)',
+                            discountPercentage: 'number (opcional, 0-100)'
+                        }
+                    },
+                    search: {
+                        method: 'GET',
+                        endpoint: '/api/walkers/search',
+                        description: 'Buscar paseadores con filtros',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        queryParams: {
+                            query: 'string (opcional) - Buscar por nombre',
+                            location: 'string (opcional) - Filtrar por ubicación',
+                            minRating: 'number (opcional, 0-5) - Calificación mínima',
+                            limit: 'number (opcional, max 100) - Limitar resultados'
+                        }
+                    },
+                    validate: {
+                        method: 'GET',
+                        endpoint: '/api/walkers/:id/validate',
+                        description: 'Validar que el usuario sea un paseador activo',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getStats: {
+                        method: 'GET',
+                        endpoint: '/api/walkers/stats',
+                        description: 'Obtener estadísticas generales de paseadores (solo admin)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    }
+                }
+            },
+            tickets: {
+                title: "🎫 Tickets de Soporte",
+                endpoints: {
+                    getFAQs: {
+                        method: 'GET',
+                        endpoint: '/api/tickets/faqs',
+                        description: 'Obtener preguntas frecuentes',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getMyTickets: {
+                        method: 'GET',
+                        endpoint: '/api/tickets/my-tickets',
+                        description: 'Obtener tickets del usuario autenticado',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getAllTickets: {
+                        method: 'GET',
+                        endpoint: '/api/tickets',
+                        description: 'Obtener todos los tickets (solo admin/support)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    createTicket: {
+                        method: 'POST',
+                        endpoint: '/api/tickets',
+                        description: 'Crear nuevo ticket de soporte',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            subject: 'string (requerido, min 5 caracteres)',
+                            message: 'string (requerido, min 10 caracteres)',
+                            category: 'string (opcional, default: "General")'
+                        }
+                    },
+                    getTicketById: {
+                        method: 'GET',
+                        endpoint: '/api/tickets/:id',
+                        description: 'Obtener ticket específico por ID',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    respondToTicket: {
+                        method: 'POST',
+                        endpoint: '/api/tickets/:id/respond',
+                        description: 'Responder a ticket (solo admin/support)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            content: 'string (requerido, min 10 caracteres)',
+                            status: 'string (requerido) - "Resuelto" o "Cancelada"',
+                            agentName: 'string (opcional)'
+                        }
+                    },
+                    updateTicketStatus: {
+                        method: 'PATCH',
+                        endpoint: '/api/tickets/:id/status',
+                        description: 'Actualizar estado de ticket (solo admin/support)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            status: 'string (requerido) - "En Espera", "En Progreso", "Resuelto", "Cancelada"'
+                        }
+                    },
+                    getStatistics: {
+                        method: 'GET',
+                        endpoint: '/api/tickets/admin/statistics',
+                        description: 'Obtener estadísticas de tickets (solo admin/support)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getCategories: {
+                        method: 'GET',
+                        endpoint: '/api/tickets/categories',
+                        description: 'Obtener categorías disponibles para tickets',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    }
+                }
+            },
+            banners: {
+                title: "🎨 Banners",
+                endpoints: {
+                    getAll: {
+                        method: 'GET',
+                        endpoint: '/api/banners',
+                        description: 'Obtener todos los banners',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getActive: {
+                        method: 'GET',
+                        endpoint: '/api/banners/active',
+                        description: 'Obtener solo banners activos (máximo 3)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getById: {
+                        method: 'GET',
+                        endpoint: '/api/banners/:id',
+                        description: 'Obtener banner específico por ID',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    create: {
+                        method: 'POST',
+                        endpoint: '/api/banners',
+                        description: 'Crear nuevo banner',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            title: 'string (requerido, máx 255 caracteres)',
+                            description: 'string (requerido, máx 500 caracteres)',
+                            image: 'string (requerido, URL válida)',
+                            isActive: 'boolean (opcional, default: false)',
+                            order: 'number (opcional, auto-asignado si no se especifica)'
+                        }
+                    },
+                    update: {
+                        method: 'PUT',
+                        endpoint: '/api/banners/:id',
+                        description: 'Actualizar banner existente',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            title: 'string (opcional)',
+                            description: 'string (opcional)',
+                            image: 'string (opcional, URL válida)',
+                            isActive: 'boolean (opcional)',
+                            order: 'number (opcional)'
+                        }
+                    },
+                    delete: {
+                        method: 'DELETE',
+                        endpoint: '/api/banners/:id',
+                        description: 'Eliminar banner',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    toggleStatus: {
+                        method: 'PATCH',
+                        endpoint: '/api/banners/:id/toggle-status',
+                        description: 'Cambiar estado activo/inactivo del banner',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    validate: {
+                        method: 'GET',
+                        endpoint: '/api/banners/:id/validate',
+                        description: 'Validar que el banner existe',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    checkActiveLimit: {
+                        method: 'GET',
+                        endpoint: '/api/banners/status/active-limit',
+                        description: 'Verificar límite de banners activos',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    }
+                }
+            },
+            reviews: {
+                title: "⭐ Reseñas",
+                endpoints: {
+                    getAll: {
+                        method: 'GET',
+                        endpoint: '/api/reviews',
+                        description: 'Obtener todas las reseñas del sistema',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getById: {
+                        method: 'GET',
+                        endpoint: '/api/reviews/:id',
+                        description: 'Obtener reseña específica por ID',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getByUser: {
+                        method: 'GET',
+                        endpoint: '/api/reviews/user/:userId',
+                        description: 'Obtener todas las reseñas creadas por un usuario',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getByWalker: {
+                        method: 'GET',
+                        endpoint: '/api/reviews/walker/:walkerId',
+                        description: 'Obtener todas las reseñas de un paseador específico',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    create: {
+                        method: 'POST',
+                        endpoint: '/api/reviews',
+                        description: 'Crear nueva reseña para un paseo',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            walkId: 'number (requerido) - ID del paseo',
+                            walkerId: 'number (requerido) - ID del paseador',
+                            rating: 'number (requerido, 1-5) - Calificación',
+                            content: 'string (requerido) - Contenido de la reseña'
+                        }
+                    },
+                    update: {
+                        method: 'PUT',
+                        endpoint: '/api/reviews/:id',
+                        description: 'Actualizar reseña existente (solo el creador)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            rating: 'number (opcional, 1-5) - Nueva calificación',
+                            content: 'string (opcional) - Nuevo contenido'
+                        }
+                    },
+                    delete: {
+                        method: 'DELETE',
+                        endpoint: '/api/reviews/:id',
+                        description: 'Eliminar reseña (solo el creador)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getStats: {
+                        method: 'GET',
+                        endpoint: '/api/reviews/stats',
+                        description: 'Obtener estadísticas generales de reseñas',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getWalkerStats: {
+                        method: 'GET',
+                        endpoint: '/api/reviews/walker/:walkerId/stats',
+                        description: 'Obtener estadísticas de reseñas de un paseador',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    validate: {
+                        method: 'GET',
+                        endpoint: '/api/reviews/:id/validate',
+                        description: 'Validar que una reseña existe',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    }
+                }
+            },
+            settings: {
+                title: "⚙️ Configuración",
+                endpoints: {
+                    getUserSettings: {
+                        method: 'GET',
+                        endpoint: '/api/settings/users/:userId',
+                        description: 'Obtener configuraciones del usuario',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    updateUserSettings: {
+                        method: 'PUT',
+                        endpoint: '/api/settings/users/:userId',
+                        description: 'Actualizar configuraciones del usuario',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            email: 'string (opcional)',
+                            notifications: {
+                                walkStatus: 'boolean (opcional)',
+                                announcements: 'boolean (opcional)',
+                                subscription: 'boolean (opcional)',
+                                messages: 'boolean (opcional)',
+                                systemAlerts: 'boolean (opcional)'
+                            }
+                        }
+                    },
+                    getUserSubscription: {
+                        method: 'GET',
+                        endpoint: '/api/settings/users/:userId/subscription',
+                        description: 'Obtener suscripción del usuario',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    updateSubscription: {
+                        method: 'PUT',
+                        endpoint: '/api/settings/users/:userId/subscription',
+                        description: 'Actualizar suscripción del usuario',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            plan: 'string (requerido)',
+                            start_date: 'string (opcional)',
+                            expiry_date: 'string (opcional)',
+                            is_active: 'boolean (opcional)'
+                        }
+                    },
+                    getSubscriptionPlans: {
+                        method: 'GET',
+                        endpoint: '/api/settings/subscription-plans',
+                        description: 'Obtener planes de suscripción (con filtro active=true)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    createSubscriptionPlan: {
+                        method: 'POST',
+                        endpoint: '/api/settings/subscription-plans',
+                        description: 'Crear nuevo plan de suscripción',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            plan_id: 'string (requerido)',
+                            name: 'string (requerido)',
+                            price: 'number (requerido)',
+                            duration: 'string (opcional)',
+                            category: 'string (opcional)',
+                            description: 'string (opcional)',
+                            max_walks: 'number (opcional)',
+                            features: 'array (requerido)',
+                            support_level: 'string (opcional)',
+                            cancellation_policy: 'string (opcional)',
+                            discount_percentage: 'number (opcional)',
+                            is_active: 'boolean (opcional)'
+                        }
+                    },
+                    updateSubscriptionPlan: {
+                        method: 'PUT',
+                        endpoint: '/api/settings/subscription-plans/:planId',
+                        description: 'Actualizar plan de suscripción',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    deleteSubscriptionPlan: {
+                        method: 'DELETE',
+                        endpoint: '/api/settings/subscription-plans/:planId',
+                        description: 'Eliminar plan de suscripción',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    togglePlanStatus: {
+                        method: 'PATCH',
+                        endpoint: '/api/settings/subscription-plans/:planId/toggle-status',
+                        description: 'Cambiar estado activo/inactivo del plan',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    validateSubscriptionUpgrade: {
+                        method: 'GET',
+                        endpoint: '/api/settings/users/:userId/upgrade/:newPlanId/validate',
+                        description: 'Validar actualización de suscripción',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    }
+                }
+            },
+            walkerRegistrations: {
+                title: "📝 Registro de Paseadores",
+                endpoints: {
+                    create: {
+                        method: 'POST',
+                        endpoint: '/api/walker-registrations',
+                        description: 'Crear nueva solicitud de registro como paseador',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            userId: 'number (requerido)',
+                            fullName: 'string (requerido)',
+                            phone: 'string (requerido)',
+                            dni: 'string (requerido, 7-8 dígitos)',
+                            city: 'string (requerido)',
+                            province: 'string (requerido)',
+                            images: {
+                                dniFront: 'object (requerido) - {name, size, type}',
+                                dniBack: 'object (requerido) - {name, size, type}',
+                                selfieWithDni: 'object (requerido) - {name, size, type}'
+                            }
+                        }
+                    },
+                    getAll: {
+                        method: 'GET',
+                        endpoint: '/api/walker-registrations',
+                        description: 'Obtener todas las solicitudes de registro',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getById: {
+                        method: 'GET',
+                        endpoint: '/api/walker-registrations/:id',
+                        description: 'Obtener solicitud específica por ID',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    update: {
+                        method: 'PUT',
+                        endpoint: '/api/walker-registrations/:id',
+                        description: 'Actualizar estado de solicitud',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            status: 'string (opcional) - pending, under_review, approved, rejected',
+                            adminNotes: 'string (opcional)'
+                        }
+                    },
+                    delete: {
+                        method: 'DELETE',
+                        endpoint: '/api/walker-registrations/:id',
+                        description: 'Eliminar solicitud de registro',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getByStatus: {
+                        method: 'GET',
+                        endpoint: '/api/walker-registrations/status/:status',
+                        description: 'Obtener solicitudes por estado',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getByUser: {
+                        method: 'GET',
+                        endpoint: '/api/walker-registrations/user/:userId',
+                        description: 'Obtener solicitud por usuario',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getStatistics: {
+                        method: 'GET',
+                        endpoint: '/api/walker-registrations/statistics',
+                        description: 'Obtener estadísticas de solicitudes',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    promoteUser: {
+                        method: 'POST',
+                        endpoint: '/api/walker-registrations/:userId/promote',
+                        description: 'Promover usuario a paseador',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    }
+                }
+            },
+            pets: {
+                title: "🐾 Mascotas",
+                endpoints: {
+                    getAll: {
+                        method: 'GET',
+                        endpoint: '/api/pets',
+                        description: 'Obtener todas las mascotas del sistema',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getById: {
+                        method: 'GET',
+                        endpoint: '/api/pets/:id',
+                        description: 'Obtener mascota específica por ID',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getByOwner: {
+                        method: 'GET',
+                        endpoint: '/api/pets/owner/:ownerId',
+                        description: 'Obtener mascotas de un propietario específico',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    create: {
+                        method: 'POST',
+                        endpoint: '/api/pets',
+                        description: 'Crear nueva mascota',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            ownerId: 'number (requerido)',
+                            name: 'string (requerido)',
+                            image: 'string (requerido, URL válida)',
+                            weight: 'number (opcional)',
+                            age: 'number (opcional)',
+                            description: 'string (opcional)'
+                        }
+                    },
+                    update: {
+                        method: 'PUT',
+                        endpoint: '/api/pets/:id',
+                        description: 'Actualizar mascota existente',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            name: 'string (opcional)',
+                            image: 'string (opcional, URL válida)',
+                            weight: 'number (opcional)',
+                            age: 'number (opcional)',
+                            description: 'string (opcional)'
+                        }
+                    },
+                    delete: {
+                        method: 'DELETE',
+                        endpoint: '/api/pets/:id',
+                        description: 'Eliminar mascota',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    validate: {
+                        method: 'GET',
+                        endpoint: '/api/pets/:id/validate',
+                        description: 'Validar que la mascota existe',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    validateOwner: {
+                        method: 'GET',
+                        endpoint: '/api/pets/owner/:ownerId/validate',
+                        description: 'Validar que el propietario puede tener mascotas',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    }
+                }
+            },
+            walks: {
+                title: "🦮 Paseos",
+                endpoints: {
+                    getAll: {
+                        method: 'GET',
+                        endpoint: '/api/walks',
+                        description: 'Obtener todos los paseos del sistema',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getById: {
+                        method: 'GET',
+                        endpoint: '/api/walks/:id',
+                        description: 'Obtener paseo específico por ID',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getByStatus: {
+                        method: 'GET',
+                        endpoint: '/api/walks/status/:status',
+                        description: 'Obtener paseos por estado (Solicitado, Esperando pago, Agendado, Activo, Finalizado, Rechazado)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getByWalker: {
+                        method: 'GET',
+                        endpoint: '/api/walks/walker/:walkerId',
+                        description: 'Obtener paseos de un paseador específico',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getByOwner: {
+                        method: 'GET',
+                        endpoint: '/api/walks/owner/:ownerId',
+                        description: 'Obtener paseos de un dueño específico',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getActive: {
+                        method: 'GET',
+                        endpoint: '/api/walks/active',
+                        description: 'Obtener paseos activos',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getScheduled: {
+                        method: 'GET',
+                        endpoint: '/api/walks/scheduled',
+                        description: 'Obtener paseos agendados',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getAwaitingPayment: {
+                        method: 'GET',
+                        endpoint: '/api/walks/awaiting-payment',
+                        description: 'Obtener paseos esperando pago',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    getRequested: {
+                        method: 'GET',
+                        endpoint: '/api/walks/requested',
+                        description: 'Obtener paseos solicitados',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    create: {
+                        method: 'POST',
+                        endpoint: '/api/walks',
+                        description: 'Crear nueva solicitud de paseo',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            walkerId: 'number (requerido)',
+                            ownerId: 'number (requerido)',
+                            petIds: 'array (requerido) - IDs de mascotas',
+                            scheduledDateTime: 'string (requerido) - ISO date',
+                            totalPrice: 'number (requerido)',
+                            description: 'string (opcional)'
+                        }
+                    },
+                    update: {
+                        method: 'PUT',
+                        endpoint: '/api/walks/:id',
+                        description: 'Actualizar información del paseo',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            duration: 'number (opcional)',
+                            distance: 'number (opcional)',
+                            walkerNotes: 'string (opcional)',
+                            adminNotes: 'string (opcional)'
+                        }
+                    },
+                    updateStatus: {
+                        method: 'PATCH',
+                        endpoint: '/api/walks/:id/status',
+                        description: 'Actualizar estado del paseo',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            status: 'string (requerido) - Solicitado, Esperando pago, Agendado, Activo, Finalizado, Rechazado, Cancelado'
+                        }
+                    },
+                    acceptRequest: {
+                        method: 'PATCH',
+                        endpoint: '/api/walks/:id/accept',
+                        description: 'Aceptar solicitud de paseo (walker)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    rejectRequest: {
+                        method: 'PATCH',
+                        endpoint: '/api/walks/:id/reject',
+                        description: 'Rechazar solicitud de paseo (walker)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    confirmPayment: {
+                        method: 'PATCH',
+                        endpoint: '/api/walks/:id/confirm-payment',
+                        description: 'Confirmar pago del paseo (owner)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    start: {
+                        method: 'PATCH',
+                        endpoint: '/api/walks/:id/start',
+                        description: 'Iniciar paseo (walker)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    finish: {
+                        method: 'PATCH',
+                        endpoint: '/api/walks/:id/finish',
+                        description: 'Finalizar paseo (walker)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    delete: {
+                        method: 'DELETE',
+                        endpoint: '/api/walks/:id',
+                        description: 'Eliminar paseo',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    validate: {
+                        method: 'GET',
+                        endpoint: '/api/walks/:id/validate',
+                        description: 'Validar que el paseo existe',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    }
+                }
+            },
+            chat: {
+                title: "💬 Chat",
+                endpoints: {
+                    getChatMessages: {
+                        method: 'GET',
+                        endpoint: '/api/chat/walks/:walkId/messages',
+                        description: 'Obtener mensajes de un chat de paseo',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    sendMessage: {
+                        method: 'POST',
+                        endpoint: '/api/chat/walks/:walkId/messages',
+                        description: 'Enviar mensaje en un chat',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            senderId: 'number (requerido)',
+                            senderType: 'string (requerido) - owner, walker',
+                            senderName: 'string (requerido)',
+                            message: 'string (requerido, max 500 caracteres)'
+                        }
+                    },
+                    markMessagesAsRead: {
+                        method: 'PUT',
+                        endpoint: '/api/chat/walks/:walkId/messages/read',
+                        description: 'Marcar mensajes como leídos',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            userId: 'number (requerido)'
+                        }
+                    },
+                    getUnreadCount: {
+                        method: 'GET',
+                        endpoint: '/api/chat/users/:userId/unread-count',
+                        description: 'Obtener cantidad de mensajes no leídos del usuario',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    }
+                }
+            },
+            walkMaps: {
+                title: "🗺️ Mapas GPS",
+                endpoints: {
+                    getWalkRoute: {
+                        method: 'GET',
+                        endpoint: '/api/walk-maps/walks/:walkId/route',
+                        description: 'Obtener ruta completa del paseo con todas las ubicaciones GPS',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    },
+                    saveLocation: {
+                        method: 'POST',
+                        endpoint: '/api/walk-maps/walks/:walkId/location',
+                        description: 'Guardar nueva ubicación GPS (solo durante paseo activo)',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        },
+                        body: {
+                            lat: 'number (requerido, -90 a 90)',
+                            lng: 'number (requerido, -180 a 180)'
+                        }
+                    },
+                    checkMapAvailability: {
+                        method: 'GET',
+                        endpoint: '/api/walk-maps/walks/:walkId/availability',
+                        description: 'Verificar si un paseo tiene mapa GPS disponible',
+                        headers: {
+                            Authorization: 'Bearer {token} (requerido)'
+                        }
+                    }
+                }
+            }
+        };
+
+        function renderEndpoints() {
+            const mainContent = document.getElementById('mainContent');
+            mainContent.innerHTML = '';
+
+            Object.keys(apiData).forEach(category => {
+                const section = document.createElement('div');
+                section.className = 'endpoint-section';
+                section.id = category;
+
+                const title = document.createElement('h2');
+                title.textContent = apiData[category].title;
+                section.appendChild(title);
+
+                const endpoints = apiData[category].endpoints;
+                Object.keys(endpoints).forEach((endpointKey, index) => {
+                    const endpoint = endpoints[endpointKey];
+                    const card = document.createElement('div');
+                    card.className = 'endpoint-card';
+                    card.dataset.category = category;
+                    card.dataset.path = endpoint.endpoint;
+                    card.dataset.description = endpoint.description;
+
+                    const header = document.createElement('div');
+                    header.className = 'endpoint-header';
+                    header.innerHTML = `
+                        <span class="method ${endpoint.method.toLowerCase()}">${endpoint.method}</span>
+                        <span class="endpoint-path">${endpoint.endpoint}</span>
+                    `;
+
+                    const details = document.createElement('div');
+                    details.className = 'endpoint-details';
+                    details.id = `details-${category}-${index}`;
+
+                    let detailsHTML = `<p class="description">${endpoint.description}</p>`;
+
+                    if (endpoint.headers) {
+                        detailsHTML += `
+                            <div class="detail-section">
+                                <h4>Headers:</h4>
+                                <div class="code-block">${JSON.stringify(endpoint.headers, null, 2)}</div>
+                            </div>
+                        `;
+                    }
+
+                    if (endpoint.queryParams) {
+                        detailsHTML += `
+                            <div class="detail-section">
+                                <h4>Query Parameters:</h4>
+                                <div class="code-block">${JSON.stringify(endpoint.queryParams, null, 2)}</div>
+                            </div>
+                        `;
+                    }
+
+                    if (endpoint.body) {
+                        detailsHTML += `
+                            <div class="detail-section">
+                                <h4>Body:</h4>
+                                <div class="code-block">${JSON.stringify(endpoint.body, null, 2)}</div>
+                            </div>
+                        `;
+                    }
+
+                    if (endpoint.response) {
+                        detailsHTML += `
+                            <div class="detail-section">
+                                <h4>Response:</h4>
+                                <div class="code-block">${JSON.stringify(endpoint.response, null, 2)}</div>
+                            </div>
+                        `;
+                    }
+
+                    details.innerHTML = detailsHTML;
+
+                    header.addEventListener('click', () => {
+                        details.classList.toggle('active');
+                    });
+
+                    card.appendChild(header);
+                    card.appendChild(details);
+                    section.appendChild(card);
+                });
+
+                mainContent.appendChild(section);
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.endpoint-card');
+            const sections = document.querySelectorAll('.endpoint-section');
+
+            if (searchTerm === '') {
+                cards.forEach(card => card.classList.remove('hidden'));
+                sections.forEach(section => section.classList.remove('hidden'));
+                return;
+            }
+
+            sections.forEach(section => {
+                let hasVisibleCards = false;
+                const sectionCards = section.querySelectorAll('.endpoint-card');
+                
+                sectionCards.forEach(card => {
+                    const path = card.dataset.path.toLowerCase();
+                    const category = card.dataset.category.toLowerCase();
+                    const description = card.dataset.description.toLowerCase();
+                    
+                    if (path.includes(searchTerm) || category.includes(searchTerm) || description.includes(searchTerm)) {
+                        card.classList.remove('hidden');
+                        hasVisibleCards = true;
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+
+                if (hasVisibleCards) {
+                    section.classList.remove('hidden');
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
+        });
+
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        renderEndpoints();
+    </script>
+</body>
+</html>
