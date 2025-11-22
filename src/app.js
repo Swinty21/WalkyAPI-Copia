@@ -11,6 +11,7 @@ const db = require('./config/database');
 class App {
     constructor() {
         this.app = express();
+        this.dbConnected = false;
         this.initializeMiddlewares();
         this.initializeRoutes();
         this.initializeDatabase();
@@ -18,13 +19,11 @@ class App {
     }
 
     initializeMiddlewares() {
-        
         this.app.use(helmet({
             contentSecurityPolicy: false,
         }));
         
         this.app.use(cors({
-            // origin: process.env.FRONTEND_URL || '*',
             origin: '*',
             methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
             allowedHeaders: ['Content-Type', 'Authorization']
@@ -43,10 +42,14 @@ class App {
     }
 
     initializeRoutes() {
-        this.app.get('/health', (req, res) => {
-            res.status(200).json({
-                status: 'success',
-                message: 'WalkyAPI está funcionando correctamente',
+        this.app.get('/health', async (req, res) => {
+            const dbStatus = await db.healthCheck();
+            res.status(dbStatus ? 200 : 503).json({
+                status: dbStatus ? 'success' : 'warning',
+                message: dbStatus 
+                    ? 'WalkyAPI está funcionando correctamente' 
+                    : 'API funcionando pero base de datos no disponible',
+                database: dbStatus ? 'connected' : 'disconnected',
                 timestamp: new Date().toISOString(),
                 uptime: process.uptime()
             });
@@ -63,13 +66,16 @@ class App {
         });
     }
 
-
     async initializeDatabase() {
         try {
             await db.connect();
+            this.dbConnected = true;
+            console.log('✅ Base de datos inicializada correctamente');
         } catch (error) {
-            console.error('❌ Error conectando a la base de datos:', error.message);
-            process.exit(1);
+            console.error('⚠️  No se pudo conectar a la base de datos después de múltiples intentos');
+            console.error('⚠️  La API continuará ejecutándose pero las operaciones de BD fallarán');
+            console.error('⚠️  Error:', error.message);
+            this.dbConnected = false;
         }
     }
 
@@ -79,6 +85,10 @@ class App {
 
     getApp() {
         return this.app;
+    }
+
+    isDatabaseConnected() {
+        return this.dbConnected;
     }
 }
 

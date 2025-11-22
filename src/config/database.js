@@ -5,27 +5,49 @@ class Database {
     constructor() {
         this.connection = null;
         this.pool = null;
+        this.maxRetries = 5;
+        this.retryDelay = 60000;
+        this.currentRetry = 0;
+    }
+
+    async sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     async connect() {
-        try {
-            this.connection = await mysql.createConnection({
-                host: process.env.DB_HOST || 'localhost',
-                user: process.env.DB_USER || 'root',
-                password: process.env.DB_PASSWORD || '',
-                database: process.env.DB_NAME || 'walkydb',
-                port: process.env.DB_PORT || 3306,
-                charset: 'utf8mb4',
-                timezone: 'Z',
-                connectTimeout: 60000,
-                enableKeepAlive: true,
-                keepAliveInitialDelay: 10000
-            });
-            console.log('✅ Conectado a MySQL');
-            return this.connection;
-        } catch (error) {
-            console.error('❌ Error conectando a MySQL:', error.message);
-            throw error;
+        this.currentRetry = 0;
+        
+        while (this.currentRetry < this.maxRetries) {
+            try {
+                this.connection = await mysql.createConnection({
+                    host: process.env.DB_HOST || 'localhost',
+                    user: process.env.DB_USER || 'root',
+                    password: process.env.DB_PASSWORD || '',
+                    database: process.env.DB_NAME || 'walkydb',
+                    port: process.env.DB_PORT || 3306,
+                    charset: 'utf8mb4',
+                    timezone: 'Z',
+                    connectTimeout: 60000,
+                    enableKeepAlive: true,
+                    keepAliveInitialDelay: 10000
+                });
+                
+                console.log('✅ Conectado a MySQL');
+                this.currentRetry = 0; // Reset counter on success
+                return this.connection;
+                
+            } catch (error) {
+                this.currentRetry++;
+                console.error(`❌ Error conectando a MySQL (intento ${this.currentRetry}/${this.maxRetries}):`, error.message);
+                
+                if (this.currentRetry >= this.maxRetries) {
+                    console.error('❌ Se alcanzó el máximo de reintentos. No se pudo conectar a la base de datos.');
+                    throw error;
+                }
+                
+                console.log(`⏳ Esperando ${this.retryDelay / 1000} segundos antes de reintentar...`);
+                await this.sleep(this.retryDelay);
+            }
         }
     }
 
@@ -63,7 +85,7 @@ class Database {
             this.pool.on('error', (err) => {
                 console.error('❌ Error del pool:', err);
                 if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-                    console.log('🔄 Reconectando...');
+                    console.log('🔄 Conexión perdida, el pool intentará reconectar automáticamente...');
                 }
             });
             
@@ -76,33 +98,48 @@ class Database {
     }
 
     async testConnection() {
-        try {
-            if (this.pool) {
-                const connection = await this.pool.getConnection();
-                await connection.ping();
-                connection.release();
-                console.log('✅ Conexión a MySQL establecida correctamente');
-                console.log(`📍 Conectado a: ${process.env.DB_HOST}:${process.env.DB_PORT}`);
-            } else if (this.connection) {
-                await this.connection.ping();
-                console.log('✅ Conexión a MySQL establecida correctamente');
+        this.currentRetry = 0;
+        
+        while (this.currentRetry < this.maxRetries) {
+            try {
+                if (this.pool) {
+                    const connection = await this.pool.getConnection();
+                    await connection.ping();
+                    connection.release();
+                    console.log('✅ Conexión a MySQL establecida correctamente');
+                    console.log(`🔐 Conectado a: ${process.env.DB_HOST}:${process.env.DB_PORT}`);
+                    this.currentRetry = 0;
+                    return true;
+                } else if (this.connection) {
+                    await this.connection.ping();
+                    console.log('✅ Conexión a MySQL establecida correctamente');
+                    this.currentRetry = 0;
+                    return true;
+                }
+            } catch (error) {
+                this.currentRetry++;
+                console.error(`❌ Error conectando a MySQL (intento ${this.currentRetry}/${this.maxRetries}):`, error.message);
+                
+                if (this.currentRetry >= this.maxRetries) {
+                    console.error('❌ Se alcanzó el máximo de reintentos. No se pudo conectar a la base de datos.');
+                    throw new ApiError('No se pudo conectar a la base de datos después de múltiples intentos', 500);
+                }
+                
+                console.log(`⏳ Esperando ${this.retryDelay / 1000} segundos antes de reintentar...`);
+                await this.sleep(this.retryDelay);
             }
-        } catch (error) {
-            console.error('❌ Error conectando a MySQL:', error);
-            throw new ApiError('No se pudo conectar a la base de datos', 500);
         }
     }
 
     async query(sql, params = []) {
         try {
-            
             if (this.pool) {
                 const connection = await this.pool.getConnection();
                 try {
                     if (process.env.NODE_ENV === 'development') {
                         console.log('🔍 SQL:', sql);
                         if (params.length > 0) {
-                            console.log('📝 Params:', params);
+                            console.log('🔍 Params:', params);
                         }
                     }
                     
@@ -112,7 +149,6 @@ class Database {
                     connection.release();
                 }
             } else {
-                
                 if (!this.connection) {
                     await this.connect();
                 }
@@ -121,6 +157,26 @@ class Database {
             }
         } catch (error) {
             console.error('❌ Error en consulta SQL:', error);
+            
+            if (error.code === 'PROTOCOL_CONNECTION_LOST' || 
+                error.code === 'ECONNREFUSED' || 
+                error.code === 'ETIMEDOUT') {
+                console.log('🔄 Intentando reconectar a la base de datos...');
+                await this.connect();
+                
+                if (this.pool) {
+                    const connection = await this.pool.getConnection();
+                    try {
+                        const [results] = await connection.execute(sql, params);
+                        return results;
+                    } finally {
+                        connection.release();
+                    }
+                } else {
+                    const [results] = await this.connection.execute(sql, params);
+                    return results;
+                }
+            }
             
             if (error.code === 'ER_NO_SUCH_TABLE') {
                 throw new ApiError('Tabla no encontrada', 500);
@@ -136,15 +192,6 @@ class Database {
             }
             if (error.code === 'ER_BAD_DB_ERROR') {
                 throw new ApiError('Base de datos no encontrada', 500);
-            }
-            if (error.code === 'ECONNREFUSED') {
-                throw new ApiError('No se pudo conectar al servidor de base de datos', 500);
-            }
-            if (error.code === 'ETIMEDOUT') {
-                throw new ApiError('Timeout de conexión a la base de datos', 500);
-            }
-            if (error.code === 'PROTOCOL_CONNECTION_LOST') {
-                throw new ApiError('Conexión perdida con la base de datos', 500);
             }
             
             throw new ApiError('Error en base de datos: ' + error.message, 500);
