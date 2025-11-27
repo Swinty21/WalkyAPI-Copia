@@ -214,6 +214,33 @@ class Walk extends BaseModel {
             };
 
             const dbStatus = statusMap[newStatus] || newStatus.toLowerCase();
+            
+            // Validar ventana de tiempo para iniciar paseo
+            if (dbStatus === 'activo') {
+                const walk = await this.getWalkById(walkId);
+                
+                if (!walk) {
+                    throw new ApiError('Paseo no encontrado', 404);
+                }
+
+                const scheduledStartTime = new Date(walk.startTime);
+                const now = new Date();
+                
+                // Calcular ventana de ±20 minutos (20 * 60 * 1000 ms)
+                const twentyMinutes = 20 * 60 * 1000;
+                const earliestTime = new Date(scheduledStartTime.getTime() - twentyMinutes);
+                const latestTime = new Date(scheduledStartTime.getTime() + twentyMinutes);
+                
+                // Validar que la hora actual esté dentro de la ventana
+                if (now < earliestTime || now > latestTime) {
+                    throw new ApiError(
+                        `No se puede iniciar el paseo fuera de la ventana permitida. ` +
+                        `El paseo está programado para ${scheduledStartTime.toLocaleString('es-AR')} ` +
+                        `(±20 minutos)`,
+                        400
+                    );
+                }
+            }
 
             const results = await db.query(
                 'CALL sp_walk_update_status(?, ?)',
