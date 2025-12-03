@@ -89,7 +89,17 @@ class SettingController {
                 throw new ApiError('Datos de suscripción requeridos', 400);
             }
 
-            const updatedSubscription = await Setting.updateSubscription(parseInt(userId), subscriptionData);
+            const formattedData = { ...subscriptionData };
+            if (formattedData.start_date) {
+                const startDate = new Date(formattedData.start_date);
+                formattedData.start_date = startDate.toISOString().slice(0, 19).replace('T', ' ');
+            }
+            if (formattedData.expiry_date) {
+                const expiryDate = new Date(formattedData.expiry_date);
+                formattedData.expiry_date = expiryDate.toISOString().slice(0, 19).replace('T', ' ');
+            }
+
+            const updatedSubscription = await Setting.updateSubscription(parseInt(userId), formattedData);
 
             res.status(200).json({
                 status: 'success',
