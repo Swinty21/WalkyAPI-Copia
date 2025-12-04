@@ -143,7 +143,7 @@ class WalkerRegistrationController {
                 status,
                 adminNotes: adminNotes || '',
                 reviewedBy: req.tokenData?.id || null,
-                reviewedAt: new Date().toISOString()
+                reviewedAt: new Date().toISOString().slice(0, 19).replace('T', ' ')
             };
             
             if (status === 'approved') {
