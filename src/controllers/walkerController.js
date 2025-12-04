@@ -93,6 +93,35 @@ class WalkerController {
 
             const settings = await Walker.getWalkerSettings(parseInt(id));
 
+            if (!settings) {
+                throw new ApiError('Configuración no encontrada', 404);
+            }
+
+            res.status(200).json({
+                status: 'success',
+                data: {
+                    settings
+                }
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async getWalkerSettingsById(req, res, next) {
+        try {
+            const { id } = req.params;
+            
+            if (!id || isNaN(id)) {
+                throw new ApiError('ID de paseador inválido', 400);
+            }
+
+            const settings = await Walker.getWalkerSettings(parseInt(id));
+
+            if (!settings) {
+                throw new ApiError('Configuración no encontrada para este paseador', 404);
+            }
+
             res.status(200).json({
                 status: 'success',
                 data: {
