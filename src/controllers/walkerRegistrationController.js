@@ -57,7 +57,7 @@ class WalkerRegistrationController {
                 province,
                 images: processedImages,
                 status: 'pending',
-                submittedAt: new Date().toISOString(),
+                submittedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
                 applicationScore: 0
             };
 
