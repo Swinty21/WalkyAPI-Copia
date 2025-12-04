@@ -142,7 +142,7 @@ class WalkerRegistrationController {
             const updatePayload = {
                 status,
                 adminNotes: adminNotes || '',
-                reviewedBy: req.tokenData?.name || null,
+                reviewedBy: req.tokenData?.id || null,
                 reviewedAt: new Date().toISOString()
             };
             
