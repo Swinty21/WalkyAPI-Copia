@@ -3,18 +3,88 @@ const db = require('../config/database');
 
 class EmailService {
     constructor() {
+        console.log('🔧 Initializing EmailService...');
+        
+        if (process.env.SENDGRID_API_KEY) {
+            try {
+                const sgMail = require('@sendgrid/mail');
+                sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+                this.sgMail = sgMail;
+                this.provider = 'sendgrid';
+                console.log('✅ EmailService initialized with SendGrid');
+            } catch (error) {
+                console.error('❌ Failed to initialize SendGrid:', error.message);
+                console.log('⚠️ Falling back to Nodemailer...');
+                this.initNodemailer();
+            }
+        } else {
+            console.log('⚠️ SENDGRID_API_KEY not found, using Nodemailer');
+            this.initNodemailer();
+        }
+    }
+
+    initNodemailer() {
+        console.log('📝 Nodemailer SMTP Config:', {
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
+            port: parseInt(process.env.SMTP_PORT) || 587,
+            secure: process.env.SMTP_SECURE === 'true',
+            user: process.env.SMTP_USER ? '✅ Set' : '❌ Missing',
+            pass: process.env.SMTP_PASS ? '✅ Set' : '❌ Missing'
+        });
+        
         this.transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: parseInt(process.env.SMTP_PORT) || 465,
+            port: parseInt(process.env.SMTP_PORT) || 587,
             secure: process.env.SMTP_SECURE === 'true',
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS
             },
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 10000,
             tls: {
                 rejectUnauthorized: false
             }
         });
+        this.provider = 'nodemailer';
+        console.log('✅ Nodemailer transporter created');
+    }
+
+    async sendEmail(mailOptions) {
+        console.log(`📤 Sending email via ${this.provider} to: ${mailOptions.to}`);
+        
+        try {
+            if (this.provider === 'sendgrid') {
+                const msg = {
+                    to: mailOptions.to,
+                    from: {
+                        email: process.env.SENDGRID_FROM_EMAIL || process.env.SMTP_USER,
+                        name: 'Walky'
+                    },
+                    subject: mailOptions.subject,
+                    html: mailOptions.html,
+                };
+                
+                console.log(`📤 [SendGrid] Sending to: ${msg.to}`);
+                const response = await this.sgMail.send(msg);
+                console.log(`✅ [SendGrid] Email sent successfully`);
+                return { messageId: response[0].headers['x-message-id'] };
+            } else {
+                console.log(`📤 [Nodemailer] Attempting connection...`);
+                const info = await this.transporter.sendMail(mailOptions);
+                console.log(`✅ [Nodemailer] Email sent successfully`);
+                return info;
+            }
+        } catch (error) {
+            console.error(`❌ [${this.provider}] Error sending email:`, {
+                message: error.message,
+                code: error.code,
+                command: error.command,
+                response: error.response
+            });
+            throw error;
+        }
     }
 
     async getUserSettings(userId) {
@@ -173,8 +243,13 @@ class EmailService {
 
     async sendNotificationEmail(notification, user) {
         try {
+            console.log(`📨 [sendNotificationEmail] Starting for user: ${user.email}`);
+            
             const notifType = this.getNotificationType(notification.title, notification.content);
+            console.log(`📨 [sendNotificationEmail] Notification type: ${notifType}`);
+            
             const shouldSend = await this.shouldSendEmail(user.id, notifType);
+            console.log(`📨 [sendNotificationEmail] Should send: ${shouldSend}`);
             
             if (!shouldSend) {
                 console.log(`⏭️ Skipping email for user ${user.id}: ${notifType} notifications disabled`);
@@ -188,7 +263,7 @@ class EmailService {
                 html: this.getEmailTemplate(notification, user)
             };
 
-            const info = await this.transporter.sendMail(mailOptions);
+            const info = await this.sendEmail(mailOptions);
             
             console.log(`✅ Email sent to ${user.email}: ${info.messageId}`);
             
@@ -269,6 +344,8 @@ class EmailService {
 
     async sendPasswordResetEmail(email, token, userName) {
         try {
+            console.log(`🔐 [sendPasswordResetEmail] Starting for: ${email}`);
+            
             const mailOptions = {
                 from: `"Walky" <${process.env.SMTP_USER}>`,
                 to: email,
@@ -321,7 +398,7 @@ class EmailService {
                 `
             };
 
-            const info = await this.transporter.sendMail(mailOptions);
+            const info = await this.sendEmail(mailOptions);
             
             console.log(`✅ Password reset email sent to ${email}: ${info.messageId}`);
             
