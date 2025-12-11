@@ -31,9 +31,11 @@ class Database {
                     enableKeepAlive: true,
                     keepAliveInitialDelay: 10000
                 });
+
+                await this.connection.query("SET time_zone = '-03:00'");
                 
-                console.log('✅ Conectado a MySQL');
-                this.currentRetry = 0; // Reset counter on success
+                console.log('✅ Conectado a MySQL con timezone AR (-03:00)');
+                this.currentRetry = 0;
                 return this.connection;
                 
             } catch (error) {
@@ -80,6 +82,8 @@ class Database {
             
             this.pool.on('connection', (connection) => {
                 console.log('🔗 Nueva conexión establecida');
+
+                connection.query("SET time_zone = '-03:00'");
             });
 
             this.pool.on('error', (err) => {
